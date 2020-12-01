@@ -1,0 +1,10 @@
+## Build files
+target/
+
+## Temp files
+
+## Vim files
+.*swp
+
+## Profiling files
+perf.data*
