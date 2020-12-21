@@ -2,6 +2,7 @@
 target/
 
 ## Temp files
+tmp/
 
 ## Vim files
 .*swp
