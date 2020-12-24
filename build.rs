@@ -6,7 +6,7 @@ fn main() {
     .cpp(true)
     .cuda(true) // implicitly adds C++ support, but I like being explicit
     .flag("-gencode").flag("arch=compute_61,code=sm_61") // compute capability of GTX 1050 = 6.1
-    .file("src/cuda/add_n.cu")
+    .file("src/cuda/linear.cu")
     .compile("kernels");
 
   // replace /usr/local/cuda/lib64 with path to your CUDA installation if necessary
