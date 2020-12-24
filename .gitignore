@@ -3,6 +3,7 @@ target/
 
 ## Temp files
 tmp/
+*.tmp
 
 ## Vim files
 .*swp
