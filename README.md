@@ -1,4 +1,4 @@
-# GPU-Accelerated Machine Learning with Rust and CUDA C
+# GPU-Accelerated Machine Learning with Rust and CUDA C++ [WIP]
 
 I took a class on Machine Learning this past quarter at college, and figured the best way to supplement and strengthen my understanding of the underlying mathematics and algorithms of the field (or at least the subset thereof which we learned) would be to implement them myself.
 I've been enjoying using Rust (I made a [raytracer](https://github.com/arjunr00/raytracer-rust)), hence the language choice.
