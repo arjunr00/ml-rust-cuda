@@ -50,6 +50,25 @@ impl Vector {
     }
   }
 
+  /// Returns a mathematical vector around a given [Matrix].
+  ///
+  /// # Arguments
+  ///
+  /// * `matrix` - The matrix to contain in the resulting vector.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::{ Matrix, Vector };
+  ///
+  /// let matrix = Matrix::new(vec![vec![1_f32, 2_f32, 5_f32, 3_f32]]);
+  /// let vector = Vector::from_matrix(matrix);
+  ///
+  /// println!("{}", vector);
+  /// ```
+  pub fn from_matrix(matrix: Matrix) -> Self {
+    Self { matrix }
+  }
+
   /// Returns a mathematical vector of specified dimension filled with zeros.
   ///
   /// # Arguments
@@ -116,7 +135,12 @@ impl Vector {
     self.matrix.set((i, 0), val);
   }
 
-  /// Returns the dimension of the vector
+  /// Returns a reference to the interal matrix ofthe vector.
+  pub fn matrix(&self) -> &Matrix {
+    &self.matrix
+  }
+
+  /// Returns the dimension of the vector.
   pub fn dim(&self) -> usize {
     self.matrix.dims().0
   }

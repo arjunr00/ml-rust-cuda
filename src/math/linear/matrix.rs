@@ -1,6 +1,8 @@
 use std::{ cmp, fmt, ops };
 use libc::{ c_float, size_t };
 
+use super::Vector;
+
 extern "C" {
   static BLOCK_SIZE: size_t;
   fn eq_mats(lhs: *const c_float, rhs: *const c_float, len: size_t) -> bool;
@@ -420,6 +422,14 @@ impl ops::Mul for &Matrix {
   }
 }
 
+impl ops::Mul<&Vector> for &Matrix {
+  type Output = Vector;
+
+  fn mul(self, other: &Vector) -> Self::Output {
+    Vector::from_matrix(self * other.matrix())
+  }
+}
+
 impl fmt::Display for Matrix {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let mut matrix_str: String = "[".to_owned();
@@ -555,8 +565,20 @@ mod tests {
     let m1 = Matrix::new(vec![vec![2_f32; dims.0]; dims.1]);
     let m2 = Matrix::new(vec![vec![3_f32; dims.2]; dims.0]);
 
-    let expected = Matrix::new(vec![vec![(2 * 3 * dims.0) as f32; dims.2]; dims.1]);
+    let expected
+      = Matrix::new(vec![vec![2_f32 * 3_f32 * dims.0 as f32; dims.2]; dims.1]);
     assert_eq!(&m1 * &m2, expected);
+  }
+
+  #[test]
+  fn test_mul_mat_vec() {
+    let dims = ((1 << 10) + 10, (1 << 10) - 123, 1 << 5);
+    let m = Matrix::new(vec![vec![2_f32; dims.0]; dims.1]);
+    let v = Vector::new(vec![3_f32; dims.0]);
+
+    let expected
+      = Vector::new(vec![2_f32 * 3_f32 * dims.0 as f32; dims.1]);
+    assert_eq!(&m * &v, expected);
   }
 
   // Failure tests

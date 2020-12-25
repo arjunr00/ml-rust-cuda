@@ -9,7 +9,9 @@ fn main() {
   println!("m1 * m3:\n{}\n", &m1 * &m3);
   println!("m1 padded 4x:\n{}\n", &m1.zero_padded(4));
 
-  let m1 = Vector::new(vec![1., 4., 2., 5., 6.]);
-  println!("{:?}", &m1);
-  println!("{}", &m1);
+  let v1 = Vector::new(vec![1., 4., 2.]);
+  println!("{:?}", &v1);
+  println!("{}", &v1);
+
+  println!("m3 * v1:\n{}\n", &m3 * &v1);
 }
