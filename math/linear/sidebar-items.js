@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Matrix","A representation of a 32-bit float matrix."],["Vector","A representation of a 32-bit float mathematical vector."]]});
