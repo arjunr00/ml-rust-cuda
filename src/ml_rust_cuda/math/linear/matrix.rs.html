@@ -650,7 +650,7 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Vector</span>;
 
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
-  <span class="kw">static</span> <span class="ident">BLOCK_SIZE</span>: <span class="ident">size_t</span>;
+  <span class="kw">static</span> <span class="ident">SUB_MATRIX_DIM</span>: <span class="ident">size_t</span>;
   <span class="kw">fn</span> <span class="ident">eq_mats</span>(<span class="ident">lhs</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_float</span>, <span class="ident">rhs</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_float</span>, <span class="ident">len</span>: <span class="ident">size_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
   <span class="kw">fn</span> <span class="ident">add_mats</span>(<span class="ident">lhs1</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_float</span>, <span class="ident">lhs2</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_float</span>, <span class="ident">rhs</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_float</span>, <span class="ident">len</span>: <span class="ident">size_t</span>);
   <span class="kw">fn</span> <span class="ident">mul_scalar_mat</span>(<span class="ident">scalar</span>: <span class="ident">c_float</span>, <span class="ident">lhs</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_float</span>, <span class="ident">rhs</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_float</span>, <span class="ident">len</span>: <span class="ident">size_t</span>);
@@ -944,7 +944,7 @@
   <span class="doccomment">/// println!(&quot;{}&quot;, matrix.transposed());</span>
   <span class="doccomment">/// ```</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">transposed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-    <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">BLOCK_SIZE</span> };
+    <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">SUB_MATRIX_DIM</span> };
 
     <span class="comment">// Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices</span>
     <span class="comment">// of size BLOCK_SIZE x BLOCK_SIZE</span>
@@ -1064,7 +1064,7 @@
               <span class="ident">other</span>.<span class="ident">dims</span>.<span class="number">0</span>, <span class="ident">other</span>.<span class="ident">dims</span>.<span class="number">1</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">BLOCK_SIZE</span> };
+    <span class="kw">let</span> <span class="ident">block_size</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">SUB_MATRIX_DIM</span> };
 
     <span class="comment">// Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices</span>
     <span class="comment">// of size BLOCK_SIZE x BLOCK_SIZE</span>
