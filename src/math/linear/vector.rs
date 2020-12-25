@@ -147,6 +147,8 @@ impl Vector {
 
   /// Returns the dot product of the vector with another vector.
   ///
+  /// Uses a CUDA kernel under the hood.
+  ///
   /// # Arguments
   ///
   /// * `other` - A reference to another vector operand.
@@ -186,6 +188,7 @@ impl Vector {
 }
 
 impl cmp::PartialEq for Vector {
+  /// See [Matrix].
   fn eq(&self, other: &Self) -> bool {
     self.matrix == other.matrix
   }
@@ -194,6 +197,7 @@ impl cmp::PartialEq for Vector {
 impl ops::Add for &Vector {
   type Output = Vector;
 
+  /// See [Matrix].
   fn add(self, other: Self) -> Self::Output {
     Self::Output {
       matrix: &self.matrix + &other.matrix
@@ -204,6 +208,7 @@ impl ops::Add for &Vector {
 impl ops::Sub for &Vector {
   type Output = Vector;
 
+  /// See [Matrix].
   fn sub(self, other: Self) -> Self::Output {
     Self::Output {
       matrix: &self.matrix - &other.matrix
@@ -214,6 +219,7 @@ impl ops::Sub for &Vector {
 impl ops::Mul<&Vector> for f32 {
   type Output = Vector;
 
+  /// See [Matrix].
   fn mul(self, other: &Vector) -> Self::Output {
     Self::Output {
       matrix: self * &other.matrix

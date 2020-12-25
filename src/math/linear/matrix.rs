@@ -282,6 +282,8 @@ impl Matrix {
 
   /// Returns a transposed copy of the matrix.
   ///
+  /// Uses a CUDA kernel under the hood.
+  ///
   /// # Examples
   /// ```
   /// use ml_rust_cuda::math::linear::Matrix;
@@ -315,6 +317,7 @@ impl Matrix {
 }
 
 impl cmp::PartialEq for Matrix {
+  /// Uses a CUDA kernel under the hood.
   fn eq(&self, other: &Self) -> bool {
     if self.elements.len() != other.elements.len() {
       return false;
@@ -333,6 +336,11 @@ impl cmp::PartialEq for Matrix {
 impl ops::Add for &Matrix {
   type Output = Matrix;
 
+  /// Uses a CUDA kernel under the hood.
+  /// 
+  /// # Panics
+  ///
+  /// Panics if both operand matrices are not of the same dimension.
   fn add(self, other: Self) -> Self::Output {
     if self.dims != other.dims {
       panic!("Matrix addition dimension mismatch: \
@@ -361,6 +369,12 @@ impl ops::Add for &Matrix {
 impl ops::Sub for &Matrix {
   type Output = Matrix;
 
+  /// Uses two CUDA kernels under the hood (one for scalar multiplication by -1,
+  /// the other for addition).
+  /// 
+  /// # Panics
+  ///
+  /// Panics if both operand matrices are not of the same dimension.
   fn sub(self, other: Self) -> Self::Output {
     self + &(-1_f32 * other)
   }
@@ -369,6 +383,7 @@ impl ops::Sub for &Matrix {
 impl ops::Mul<&Matrix> for f32 {
   type Output = Matrix;
 
+  /// Uses a CUDA kernel under the hood.
   fn mul(self, other: &Matrix) -> Self::Output {
     let dims = other.dims;
     let mut result = Matrix::zero(dims);
@@ -388,6 +403,12 @@ impl ops::Mul<&Matrix> for f32 {
 impl ops::Mul for &Matrix {
   type Output = Matrix;
 
+  /// Uses a CUDA kernel under the hood.
+  /// 
+  /// # Panics
+  ///
+  /// Panics if the number of columns in the first operand is not equal to the
+  /// number of rows in the second operand.
   fn mul(self, other: Self) -> Self::Output {
     if self.dims.1 != other.dims.0 {
       panic!("Matrix multiplication dimension mismatch: \
@@ -425,6 +446,12 @@ impl ops::Mul for &Matrix {
 impl ops::Mul<&Vector> for &Matrix {
   type Output = Vector;
 
+  /// Uses the same CUDA kernel as matrix multiplication.
+  ///
+  /// # Panics
+  ///
+  /// Panics if the number of columns in the matrix is not equal to the
+  /// dimension of the vector.
   fn mul(self, other: &Vector) -> Self::Output {
     Vector::from_matrix(self * other.matrix())
   }
