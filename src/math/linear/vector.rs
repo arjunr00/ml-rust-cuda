@@ -1,18 +1,48 @@
-use std::{ cmp, ops };
+use std::{ cmp, fmt, ops };
 use libc::{ c_float, size_t };
 
-use super::matrix::Matrix;
+use super::Matrix;
 
 extern "C" {
   fn dot_vecs(lhs1: *const c_float, lhs2: *const c_float, rhs: *const c_float, len: size_t);
 }
 
+/// A representation of a 32-bit float mathematical vector.
+///
+/// A vector is simply a wrapper around a [Matrix] with additional and/or
+/// vector-specific operations.
+/// Don't confuse this with Rust's [Vec] data type.
+///
+/// ```
+/// use ml_rust_cuda::math::linear::Vector;
+///
+/// let elements = vec![1_f32, 3_f32, 4_f32];
+/// let vector = Vector::new(elements);
+///
+/// // "Vector { matrix: Matrix { elements: [ 1.0, 3.0, 4.0 ], dims: (3, 1) } }
+/// println!("{:?}", vector);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Vector {
   matrix: Matrix
 }
 
 impl Vector {
+  /// Returns a mathematical vector representation from a supplied [f32] vector.
+  ///
+  /// # Arguments
+  ///
+  /// * `elements` - A vector of `f32`s for the mathematical vector.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let vec = vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32];
+  /// let vector = Vector::new(vec);
+  ///
+  /// println!("{}", vector);
+  /// ```
   pub fn new(elements: Vec<f32>) -> Self {
     let n_rows = elements.len();
     Self {
@@ -20,20 +50,97 @@ impl Vector {
     }
   }
 
+  /// Returns a mathematical vector of specified dimension filled with zeros.
+  ///
+  /// # Arguments
+  ///
+  /// * `n_elements` - The dimension of the resulting vector.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let vector = Vector::zero(6);
+  ///
+  /// println!("{}", vector);
+  /// ```
   pub fn zero(n_elements: usize) -> Self {
     Self {
-      matrix: Matrix::zero(n_elements, 1)
+      matrix: Matrix::zero((n_elements, 1))
     }
   }
 
-  pub fn set(&mut self, i: usize, val: f32) {
-    self.matrix.set(i, 0, val);
+  /// Returns the element of the vector at a given position, or `None` if the
+  /// index is out of bounds of the vector.
+  /// 
+  /// # Arguments
+  ///
+  /// * `i` - The target element's index.
+  /// 
+  /// # Examples
+  ///
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let vec = vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32];
+  /// let vector = Vector::new(vec);
+  ///
+  /// assert_eq!(vector.get(2), Some(8_f32));
+  /// assert!(vector.get(8).is_none());
+  /// ```
+  pub fn get(&self, i: usize) -> Option<f32> {
+    self.matrix.get((i, 0))
   }
 
+  /// Replaces the element of the vector at a given position with a given value.
+  /// Does nothing if the position is out of bounds of the vector.
+  ///
+  /// # Arguments
+  ///
+  /// * `i` - The target element's position.
+  /// * `val` - The value with which to replace the target element.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let vec = vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32];
+  /// let mut vector = Vector::new(vec);
+  ///
+  /// vector.set(2, 5_f32);
+  ///
+  /// assert_eq!(vector.get(2), Some(5_f32));
+  /// ```
+  pub fn set(&mut self, i: usize, val: f32) {
+    self.matrix.set((i, 0), val);
+  }
+
+  /// Returns the dimension of the vector
   pub fn dim(&self) -> usize {
     self.matrix.dims().0
   }
-  
+
+  /// Returns the dot product of the vector with another vector.
+  ///
+  /// # Arguments
+  ///
+  /// * `other` - A reference to another vector operand.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let v1 = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);
+  /// let v2 = Vector::new(vec![8_f32, 1_f32, 2_f32, 4_f32, 0_f32, 1_f32]);
+  ///
+  /// let dot = v1.dot(&v2);
+  /// assert_eq!(dot, 105_f32);
+  /// ```
+  ///
+  /// # Panics
+  ///
+  /// Panics if the dimensions of both vectors are not equal.
   pub fn dot(&self, other: &Self) -> f32 {
     if self.dim() != other.dim() {
       panic!("Vector dot product dimension mismatch: \
@@ -87,6 +194,12 @@ impl ops::Mul<&Vector> for f32 {
     Self::Output {
       matrix: self * &other.matrix
     }
+  }
+}
+
+impl fmt::Display for Vector {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    self.matrix.fmt(f)
   }
 }
 

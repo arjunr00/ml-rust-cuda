@@ -1,11 +1,15 @@
-use ml_rust::math::linear::Matrix;
+use ml_rust_cuda::math::linear::{ Matrix, Vector };
 
 fn main() {
-  let v1 = Matrix::new(vec![vec![1., 2.], vec![3., 4.], vec![5., 6.]]);
-  let v2 = Matrix::new(vec![vec![2., 3.], vec![4., 5.], vec![6., 7.]]);
-  if &v1 + &v2 == Matrix::new(vec![vec![3., 5.], vec![7., 9.], vec![11., 13.]]) {
-    println!("Correct: {:?}", &v1 + &v2);
-  } else {
-    println!("Incorrect: {:?}", &v1 + &v2);
-  }
+  let m1 = Matrix::new(vec![vec![10., 2.], vec![3., 4.4], vec![5., 6.]]);
+  let m2 = Matrix::new(vec![vec![1., 22.], vec![3.1, 4.2], vec![2., 7.1]]);
+  let m3 = Matrix::new(vec![vec![20., 3.2, 4.], vec![4., 5., 6.]]);
+  println!("m1:\n{}\n\nm2:\n{}\n\nm3:\n{}\n", &m1, &m2, &m3);
+  println!("m1 + m2:\n{}\n", &m1 + &m2);
+  println!("m1 * m3:\n{}\n", &m1 * &m3);
+  println!("m1 padded 4x:\n{}\n", &m1.zero_padded(4));
+
+  let m1 = Vector::new(vec![1., 4., 2., 5., 6.]);
+  println!("{:?}", &m1);
+  println!("{}", &m1);
 }

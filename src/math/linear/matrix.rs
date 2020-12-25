@@ -1,4 +1,4 @@
-use std::{ cmp, ops };
+use std::{ cmp, fmt, ops };
 use libc::{ c_float, size_t };
 
 extern "C" {
@@ -15,6 +15,23 @@ extern "C" {
     (lhs: *const c_float, lhs_rows: size_t, lhs_cols: size_t, rhs: *mut c_float);
 }
 
+/// A representation of a 32-bit float matrix.
+///
+/// A matrix's elements are stored as a flat, 1-dimensional vector, with an
+/// internal tuple which defines the dimensions of the matrix, i.e. how the
+/// matrix's elements are interpreted, in (rows, columns) format.
+///
+/// ```
+/// use ml_rust_cuda::math::linear::Matrix;
+///
+/// let elements =
+///   vec![vec![1_f32, 3_f32, 4_f32],
+///        vec![2_f32, 5_f32, 8_f32]];
+/// let matrix = Matrix::new(elements);
+///
+/// // "Matrix { elements: [ 1.0, 3.0, 4.0, 2.0, 5.0, 8.0 ], dims: (2, 3) }"
+/// println!("{:?}", matrix);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Matrix {
   elements: Vec<f32>,
@@ -22,6 +39,29 @@ pub struct Matrix {
 }
 
 impl Matrix {
+  /// Returns a matrix representation from a supplied 2-dimensional [f32] vector.
+  ///
+  /// # Arguments
+  ///
+  /// * `elements` - A [Vec] of rows of [f32]s for the matrix.
+  /// 
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32, 4_f32],
+  ///        vec![2_f32, 5_f32, 8_f32],
+  ///        vec![9_f32, 5_f32, 8_f32],
+  ///        vec![3_f32, 4_f32, 0_f32]];
+  /// let matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// println!("{}", matrix);
+  /// ```
+  ///
+  /// # Panics
+  ///
+  /// Panics if all [Vec]s within `elements` are not of equal length.
   pub fn new(elements: Vec<Vec<f32>>) -> Self {
     let n_cols: usize =
       if let Some(first_row) = elements.get(0) {
@@ -43,41 +83,144 @@ impl Matrix {
     }
   }
 
+  /// Returns a matrix representation from a flat 1-dimensional [f32] vector
+  /// of specified dimensions.
+  ///
+  /// # Arguments
+  ///
+  /// * `elements` - A flat vector of [f32]s **stored in row-major form** (i.e.
+  ///                elements in the same row are adjacent to each other in
+  ///                `elements`).
+  /// * `dims` - The dimensions of the matrix in (rows, columns).
+  /// 
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let flat_vec =
+  ///   vec![1_f32, 3_f32, 4_f32,
+  ///        2_f32, 5_f32, 8_f32,
+  ///        9_f32, 5_f32, 8_f32,
+  ///        3_f32, 4_f32, 0_f32];
+  /// let matrix = Matrix::from_flat(flat_vec, (4, 3));
+  ///
+  /// println!("{}", matrix);
+  /// ```
   pub fn from_flat(elements: Vec<f32>, dims: (usize, usize)) -> Self {
     Self { elements, dims }
   }
 
-  pub fn zero(n_rows: usize, n_cols: usize) -> Self {
+  /// Returns a matrix of specified dimensions filled with zeros.
+  ///
+  /// # Arguments
+  ///
+  /// * `dims` - The dimensions of the matrix in (rows, columns).
+  /// 
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let matrix = Matrix::zero((4, 3));
+  /// 
+  /// println!("{}", matrix);
+  /// ```
+  pub fn zero(dims: (usize, usize)) -> Self {
     Self {
-      elements: vec![0_f32; n_rows * n_cols],
-      dims: (n_rows, n_cols)
+      elements: vec![0_f32; dims.0 * dims.1],
+      dims: dims
     }
   }
 
-  pub fn get(&self, i: usize, j: usize) -> Option<f32> {
-    Some(self.elements.get(i * self.dims.1 + j)?.clone())
+  /// Returns the element of the matrix at a given position, or `None` if the index
+  /// is out of bounds of the matrix.
+  ///
+  /// # Arguments
+  ///
+  /// * `pos` - The target element's position in (row, column) form, zero-indexed.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32, 4_f32],
+  ///        vec![2_f32, 5_f32, 8_f32]];
+  /// let matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// assert_eq!(matrix.get((1, 2)), Some(8_f32));
+  /// assert!(matrix.get((2, 0)).is_none());
+  /// ```
+  pub fn get(&self, pos: (usize, usize)) -> Option<f32> {
+    Some(self.elements.get(pos.0 * self.dims.1 + pos.1)?.clone())
   }
 
-  pub fn set(&mut self, i: usize, j: usize, val: f32) {
-    if let Some(elem) = self.elements.get_mut(i * self.dims.1 + j) {
+  /// Replaces the element of the matrix at a given position with a given value.
+  /// Does nothing if the position is out of bounds of the matrix.
+  ///
+  /// # Arguments
+  ///
+  /// * `pos` - The target element's position in (row, column) form, zero-indexed.
+  /// * `val` - The value with which to replace the target element.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32, 4_f32],
+  ///        vec![2_f32, 5_f32, 8_f32]];
+  /// let mut matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// matrix.set((1, 2), 5_f32);
+  ///
+  /// assert_eq!(matrix.get((1, 2)), Some(5_f32));
+  /// ```
+  pub fn set(&mut self, pos: (usize, usize), val: f32) {
+    if let Some(elem) = self.elements.get_mut(pos.0 * self.dims.1 + pos.1) {
       *elem = val;
     }
   }
 
+  /// Returns a reference to the matrix's internal flat element vector.
   pub fn elements(&self) -> &Vec<f32> {
     &self.elements
   }
 
-  pub fn dims(&self) -> (usize, usize) {
-    self.dims
+  /// Returns a reference to the matrix's dimension tuple in the form (rows,
+  /// columns), zero-indexed.
+  pub fn dims(&self) -> &(usize, usize) {
+    &self.dims
   }
 
-  pub fn zero_padded(&self, amount: usize) -> Self {
+  /// Returns a copy of the matrix padded with zeros such that each dimension
+  /// of the resulting matrix is a multiple of a specified value.
+  ///
+  /// # Arguments
+  ///
+  /// * `target` - The number by which the resulting matrix's dimensions should
+  ///              be divisible by.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32],
+  ///        vec![2_f32, 5_f32],
+  ///        vec![0_f32, 7_f32],
+  ///        vec![8_f32, 4_f32]];
+  /// let matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// println!("{}", matrix.zero_padded(3));
+  /// ```
+  pub fn zero_padded(&self, target: usize) -> Self {
     let n_extra_rows
-      = amount * ((self.dims.0 / amount) + ((self.dims.0 % amount != 0) as usize))
+      = target * ((self.dims.0 / target) + ((self.dims.0 % target != 0) as usize))
         - self.dims.0;
     let n_extra_cols
-      = amount * ((self.dims.1 / amount) + ((self.dims.1 % amount != 0) as usize))
+      = target * ((self.dims.1 / target) + ((self.dims.1 % target != 0) as usize))
         - self.dims.1;
 
     let mut new_elements: Vec<f32>
@@ -97,6 +240,28 @@ impl Matrix {
     Matrix::from_flat(new_elements, new_dims) 
   }
 
+  /// Returns a copy of the matrix truncated such that the resulting matrix's
+  /// dimensions match the provided dimensions.
+  ///
+  /// # Arguments
+  ///
+  /// * `new_dims` - The dimensions of the new matrix in (rows, columns).
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32, 0_f32, 0_f32],
+  ///        vec![2_f32, 5_f32, 0_f32, 0_f32],
+  ///        vec![0_f32, 7_f32, 0_f32, 0_f32],
+  ///        vec![8_f32, 4_f32, 0_f32, 0_f32],
+  ///        vec![0_f32, 0_f32, 0_f32, 0_f32],
+  ///        vec![0_f32, 0_f32, 0_f32, 0_f32]];
+  /// let matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// println!("{}", matrix.truncated((4, 2)));
+  /// ```
   pub fn truncated(&self, new_dims: (usize, usize)) -> Self {
     let new_dims =
       (if new_dims.0 > self.dims.0 { self.dims.0 } else { new_dims.0 },
@@ -113,10 +278,27 @@ impl Matrix {
     Matrix::from_flat(new_elements, new_dims)
   }
 
+  /// Returns a transposed copy of the matrix.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Matrix;
+  ///
+  /// let vec_of_vecs =
+  ///   vec![vec![1_f32, 3_f32],
+  ///        vec![2_f32, 5_f32],
+  ///        vec![0_f32, 7_f32],
+  ///        vec![8_f32, 4_f32]];
+  /// let matrix = Matrix::new(vec_of_vecs);
+  ///
+  /// println!("{}", matrix.transposed());
+  /// ```
   pub fn transposed(&self) -> Self {
     let block_size = unsafe { BLOCK_SIZE };
-    let mut result = Matrix::zero(self.dims.1, self.dims.0).zero_padded(block_size);
 
+    // Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices
+    // of size BLOCK_SIZE x BLOCK_SIZE
+    let mut result = Matrix::zero((self.dims.1, self.dims.0)).zero_padded(block_size);
     let lhs_padded = self.zero_padded(block_size);
 
     let lhs = lhs_padded.elements.as_ptr();
@@ -159,7 +341,7 @@ impl ops::Add for &Matrix {
     }
 
     let dims = self.dims;
-    let mut result = Matrix::zero(dims.0, dims.1);
+    let mut result = Matrix::zero(dims);
     let len = dims.0 * dims.1;
 
     let lhs1 = self.elements.as_ptr();
@@ -187,7 +369,7 @@ impl ops::Mul<&Matrix> for f32 {
 
   fn mul(self, other: &Matrix) -> Self::Output {
     let dims = other.dims;
-    let mut result = Matrix::zero(dims.0, dims.1);
+    let mut result = Matrix::zero(dims);
     let len = dims.0 * dims.1;
 
     let lhs = other.elements.as_ptr();
@@ -214,8 +396,11 @@ impl ops::Mul for &Matrix {
     }
 
     let block_size = unsafe { BLOCK_SIZE };
-    let mut result = Matrix::zero(self.dims.0, other.dims.1).zero_padded(block_size);
 
+    // Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices
+    // of size BLOCK_SIZE x BLOCK_SIZE
+    let mut result
+      = Matrix::zero((self.dims.0, other.dims.1)).zero_padded(block_size);
     let lhs1_padded = self.zero_padded(block_size);
     let lhs2_padded = other.zero_padded(block_size);
 
@@ -232,6 +417,33 @@ impl ops::Mul for &Matrix {
     }
 
     result.truncated((self.dims.0, other.dims.1))
+  }
+}
+
+impl fmt::Display for Matrix {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let mut matrix_str: String = "[".to_owned();
+
+    for i in 0..self.dims.0 {
+      if i != 0 {
+        matrix_str += " ";
+      }
+      matrix_str += "[";
+      for j in 0..self.dims.1 {
+        matrix_str +=
+          &format!("{:>4}", self.elements[i * self.dims.1 + j]);
+        if j != self.dims.1 - 1 {
+          matrix_str += ",\t";
+        }
+      }
+      matrix_str += "]";
+      if i != self.dims.0 - 1 {
+        matrix_str += ", \n";
+      }
+    }
+    matrix_str += "]";
+
+    f.write_str(&matrix_str)
   }
 }
 
@@ -295,9 +507,9 @@ mod tests {
   fn test_mats_not_equal() {
     let m1 = Matrix::new(vec![vec![1.618_f32; 1 << 10]; (1 << 9) + 10]);
     let mut m2 = Matrix::new(vec![vec![1.618_f32; 1 << 10]; (1 << 9) + 10]);
-    m2.set(1 << 7, 1 << 9, 1.619_f32);
-    m2.set(1 << 8, 1 << 5, 2.71_f32);
-    m2.set(1 << 9, 1 << 9, 4.20_f32);
+    m2.set((1 << 7, 1 << 9), 1.619_f32);
+    m2.set((1 << 8, 1 << 5), 2.71_f32);
+    m2.set((1 << 9, 1 << 9), 4.20_f32);
 
 
     let mut equal = true;
