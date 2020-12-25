@@ -15,6 +15,7 @@ My aim is to use as few dependencies as is reasonable, so that I can focus on im
 ## Dependencies
 
 * [libc 0.2](https://crates.io/crates/libc)
+* [rand 0.8](https://crates.io/crates/rand)
 * [Build] [cc 1.0](https://crates.io/crates/cc)
 
 ## Usage

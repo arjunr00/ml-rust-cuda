@@ -4,7 +4,7 @@ use libc::{ c_float, size_t };
 use super::Vector;
 
 extern "C" {
-  static BLOCK_SIZE: size_t;
+  static SUB_MATRIX_DIM: size_t;
   fn eq_mats(lhs: *const c_float, rhs: *const c_float, len: size_t) -> bool;
   fn add_mats(lhs1: *const c_float, lhs2: *const c_float, rhs: *mut c_float, len: size_t);
   fn mul_scalar_mat(scalar: c_float, lhs: *const c_float, rhs: *mut c_float, len: size_t);
@@ -298,7 +298,7 @@ impl Matrix {
   /// println!("{}", matrix.transposed());
   /// ```
   pub fn transposed(&self) -> Self {
-    let block_size = unsafe { BLOCK_SIZE };
+    let block_size = unsafe { SUB_MATRIX_DIM };
 
     // Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices
     // of size BLOCK_SIZE x BLOCK_SIZE
@@ -418,7 +418,7 @@ impl ops::Mul for &Matrix {
               other.dims.0, other.dims.1);
     }
 
-    let block_size = unsafe { BLOCK_SIZE };
+    let block_size = unsafe { SUB_MATRIX_DIM };
 
     // Pad the matrices to BLOCK_SIZE since kernel operates on sub-matrices
     // of size BLOCK_SIZE x BLOCK_SIZE

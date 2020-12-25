@@ -41,9 +41,9 @@ void naive_dot_vecs(float *lhs1, float *lhs2, float *rhs, size_t len) {
 
 void profile_mul_mats(bool out) {
   size_t dim_1 = 1 << 10, dim_2 = (1 << 10) + 123, dim_3 = (1 << 10) - 231;
-  size_t pad_1 = BLOCK_SIZE * ((dim_1 / BLOCK_SIZE) + (dim_1 % BLOCK_SIZE != 0)),
-         pad_2 = BLOCK_SIZE * ((dim_2 / BLOCK_SIZE) + (dim_2 % BLOCK_SIZE != 0)),
-         pad_3 = BLOCK_SIZE * ((dim_3 / BLOCK_SIZE) + (dim_3 % BLOCK_SIZE != 0));
+  size_t pad_1 = SUB_MATRIX_DIM * ((dim_1 / SUB_MATRIX_DIM) + (dim_1 % SUB_MATRIX_DIM != 0)),
+         pad_2 = SUB_MATRIX_DIM * ((dim_2 / SUB_MATRIX_DIM) + (dim_2 % SUB_MATRIX_DIM != 0)),
+         pad_3 = SUB_MATRIX_DIM * ((dim_3 / SUB_MATRIX_DIM) + (dim_3 % SUB_MATRIX_DIM != 0));
   float *m1 = new float[pad_1 * pad_3]; // dim_1 x dim_3
   std::fill_n(m1, pad_1 * pad_3, 0.f);
   float *m2 = new float[pad_3 * pad_2]; // dim_3 x dim_2
@@ -118,8 +118,8 @@ void profile_mul_mats(bool out) {
 
 void profile_transpose_mat(bool out) {
   size_t dim_1 = (1 << 10) - 123, dim_2 = (1 << 10) + 13;
-  size_t pad_1 = BLOCK_SIZE * ((dim_1 / BLOCK_SIZE) + (dim_1 % BLOCK_SIZE != 0));
-  size_t pad_2 = BLOCK_SIZE * ((dim_2 / BLOCK_SIZE) + (dim_2 % BLOCK_SIZE != 0));
+  size_t pad_1 = SUB_MATRIX_DIM * ((dim_1 / SUB_MATRIX_DIM) + (dim_1 % SUB_MATRIX_DIM != 0));
+  size_t pad_2 = SUB_MATRIX_DIM * ((dim_2 / SUB_MATRIX_DIM) + (dim_2 % SUB_MATRIX_DIM != 0));
 
   float *m = new float[pad_1 * pad_2];
   std::fill_n(m, pad_1 * pad_2, 0.f);

@@ -4,7 +4,8 @@ use libc::{ c_float, size_t };
 use super::Matrix;
 
 extern "C" {
-  fn dot_vecs(lhs1: *const c_float, lhs2: *const c_float, rhs: *const c_float, len: size_t);
+  fn dot_vecs(lhs1: *const c_float, lhs2: *const c_float, rhs: *mut c_float, len: size_t);
+  fn p_norm_vec(lhs: *const c_float, p: c_float, rhs: *mut c_float, len: size_t);
 }
 
 /// A representation of a 32-bit float mathematical vector.
@@ -185,6 +186,54 @@ impl Vector {
 
     rhs
   }
+
+  /// Returns the p-norm of the vector.
+  ///
+  /// The p-norm of a vector `v` of dimension `n` is defined as
+  ///
+  /// `||v||p = (|v_1|^p + ... |v_n|^p)^(1/p)`
+  ///
+  /// for any real number `p >= 0`.
+  ///
+  /// The infinity norm (i.e. the limit of `||v||p` as `p` tends to infinity)
+  /// is the same as `max(v_i)` for each element `v_i` of `v`.
+  ///
+  /// Uses a CUDA kernel under the hood.
+  ///
+  /// # Arguments
+  ///
+  /// * `p` - A positive 32-bit float.
+  ///
+  /// # Examples
+  /// ```
+  /// use ml_rust_cuda::math::linear::Vector;
+  ///
+  /// let v = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);
+  /// let p = 2_f32;
+  ///
+  /// let p_norm = v.p_norm(p);
+  /// let inf_norm = v.p_norm(f32::INFINITY);
+  /// assert_eq!(p_norm, 195_f32.sqrt());
+  /// assert_eq!(inf_norm, 9_f32);
+  /// ```
+  ///
+  /// # Panics
+  ///
+  /// Panics if `p` is less than or equal to 0.
+  pub fn p_norm(&self, p: f32) -> f32 {
+    if p <= 0_f32 || p.is_nan() {
+      panic!("Cannot calculate the p-norm for p = {}", p);
+    }
+
+    let lhs = self.matrix.elements().as_ptr();
+    let mut rhs = 0_f32;
+
+    unsafe {
+      p_norm_vec(lhs, p, &mut rhs, self.dim())
+    };
+
+    if p.is_infinite() { rhs } else { rhs.powf(1_f32 / p) }
+  }
 }
 
 impl cmp::PartialEq for Vector {
@@ -236,6 +285,9 @@ impl fmt::Display for Vector {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::math::f32_eq;
+
+  use rand::seq::SliceRandom;
 
   #[test]
   fn test_vecs_equal() {
@@ -271,7 +323,30 @@ mod tests {
     let v2 = Vector::new(vec![5_f32; (1 << 20) + 123]);
 
     let expected = (15 * ((1 << 20) + 123)) as f32;
-    assert_eq!(v1.dot(&v2), expected);
+    assert!(f32_eq(v1.dot(&v2), expected));
+  }
+
+  #[test]
+  fn test_p_norm_vec() {
+    let p = 3_f32;
+    let v = Vector::new(vec![3_f32; (1 << 20) + 123]);
+
+    let expected = // (3^p * (2^20 + 123)
+      ((3_f32.powf(p) * ((1 << 20) + 123) as f32)).powf(1_f32/p);
+    assert!(f32_eq(v.p_norm(p), expected));
+  }
+
+  #[test]
+  fn test_inf_norm_vec() {
+    let vals = vec![3.14_f32, 6.67_f32, 6.02_f32, 1.61_f32];
+    let mut vec = Vec::<f32>::with_capacity((1 << 20) + 123);
+    for _ in 0..vec.capacity() {
+      vec.push(vals.choose(&mut rand::thread_rng()).unwrap().clone());
+    }
+    let v = Vector::new(vec);
+
+    let expected = 6.67_f32;
+    assert!(f32_eq(v.p_norm(f32::INFINITY), expected));
   }
 
   #[test]
@@ -281,5 +356,13 @@ mod tests {
     let v2 = Vector::new(vec![5_f32; (1 << 20) + 122]);
 
     v1.dot(&v2);
+  }
+
+  #[test]
+  #[should_panic(expected = "Cannot calculate the p-norm for p = 0")]
+  fn test_p_norm_zero() {
+    let v = Vector::new(vec![3_f32; (1 << 20) + 123]);
+
+    v.p_norm(0_f32);
   }
 }

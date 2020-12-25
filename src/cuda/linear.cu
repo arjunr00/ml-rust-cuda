@@ -105,10 +105,10 @@ void mul_mats
   Matrix lhs2_mat = { lhs2_rows, lhs2_cols, d_lhs2 };
   Matrix rhs_mat = { lhs1_rows, lhs2_cols, d_rhs };
 
-  dim3 threads_per_block(BLOCK_SIZE, BLOCK_SIZE);
+  dim3 threads_per_block(SUB_MATRIX_DIM, SUB_MATRIX_DIM);
   dim3 blocks_per_grid
-    ((lhs2_cols / BLOCK_SIZE) + (lhs2_cols % BLOCK_SIZE != 0), 
-     (lhs1_rows / BLOCK_SIZE) + (lhs1_rows % BLOCK_SIZE != 0));
+    ((lhs2_cols / SUB_MATRIX_DIM) + (lhs2_cols % SUB_MATRIX_DIM != 0), 
+     (lhs1_rows / SUB_MATRIX_DIM) + (lhs1_rows % SUB_MATRIX_DIM != 0));
   kernel_mul_mats<<<blocks_per_grid, threads_per_block>>>
     (lhs1_mat, lhs2_mat, rhs_mat);
 
@@ -135,10 +135,10 @@ void transpose_mat(float *lhs, size_t lhs_rows, size_t lhs_cols, float *rhs) {
   Matrix lhs_mat = { lhs_rows, lhs_cols, d_lhs };
   Matrix rhs_mat = { lhs_cols, lhs_rows, d_rhs };
 
-  dim3 threads_per_block(BLOCK_SIZE, BLOCK_SIZE);
+  dim3 threads_per_block(SUB_MATRIX_DIM, SUB_MATRIX_DIM);
   dim3 blocks_per_grid
-    ((lhs_cols / BLOCK_SIZE) + (lhs_cols % BLOCK_SIZE != 0),
-     (lhs_rows / BLOCK_SIZE) + (lhs_rows % BLOCK_SIZE != 0));
+    ((lhs_cols / SUB_MATRIX_DIM) + (lhs_cols % SUB_MATRIX_DIM != 0),
+     (lhs_rows / SUB_MATRIX_DIM) + (lhs_rows % SUB_MATRIX_DIM != 0));
   kernel_transpose_mat<<<blocks_per_grid, threads_per_block>>>
     (lhs_mat, rhs_mat);
 
@@ -162,8 +162,8 @@ void dot_vecs(float *lhs1, float *lhs2, float *rhs, size_t len) {
   cudaMemcpy(d_lhs1, lhs1, vec_size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_lhs2, lhs2, vec_size, cudaMemcpyHostToDevice);
 
-  int threads_per_block = 8 * BLOCK_SIZE;
-  int blocks_per_grid = (len / (8 * BLOCK_SIZE)) + (len % (8 * BLOCK_SIZE) != 0);
+  int threads_per_block = SUB_VECTOR_LEN;
+  int blocks_per_grid = (len / SUB_VECTOR_LEN) + (len % SUB_VECTOR_LEN != 0);
   kernel_dot_vecs<<<blocks_per_grid, threads_per_block>>>
     (d_lhs1, d_lhs2, d_rhs);
 
@@ -173,5 +173,32 @@ void dot_vecs(float *lhs1, float *lhs2, float *rhs, size_t len) {
 
   cudaFree(d_lhs1);
   cudaFree(d_lhs2);
+  cudaFree(d_rhs);
+}
+
+extern "C"
+void p_norm_vec(float *lhs, float p, float *rhs, size_t len) {
+  size_t vec_size = len * sizeof(float);
+
+  float *d_lhs, *d_rhs;
+  cudaMalloc(&d_lhs, vec_size);
+  cudaMalloc(&d_rhs, sizeof(float));
+
+  cudaMemcpy(d_lhs, lhs, vec_size, cudaMemcpyHostToDevice);
+
+  int threads_per_block = SUB_VECTOR_LEN;
+  int blocks_per_grid = (len / SUB_VECTOR_LEN) + (len % SUB_VECTOR_LEN != 0);
+  if (isinf(p))
+    kernel_inf_norm_vec<<<blocks_per_grid, threads_per_block>>>
+      (d_lhs, d_rhs);
+  else
+    kernel_p_norm_vec<<<blocks_per_grid, threads_per_block>>>
+      (d_lhs, p, d_rhs);
+
+  cudaDeviceSynchronize();
+
+  cudaMemcpy(rhs, d_rhs, sizeof(float), cudaMemcpyDeviceToHost);
+
+  cudaFree(d_lhs);
   cudaFree(d_rhs);
 }
