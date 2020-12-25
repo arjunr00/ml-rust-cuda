@@ -46,7 +46,7 @@ impl Matrix {
   /// # Arguments
   ///
   /// * `elements` - A [Vec] of rows of [f32]s for the matrix.
-  /// 
+  ///
   /// # Examples
   /// ```
   /// use ml_rust_cuda::math::linear::Matrix;
@@ -94,7 +94,7 @@ impl Matrix {
   ///                elements in the same row are adjacent to each other in
   ///                `elements`).
   /// * `dims` - The dimensions of the matrix in (rows, columns).
-  /// 
+  ///
   /// # Examples
   /// ```
   /// use ml_rust_cuda::math::linear::Matrix;
@@ -117,13 +117,13 @@ impl Matrix {
   /// # Arguments
   ///
   /// * `dims` - The dimensions of the matrix in (rows, columns).
-  /// 
+  ///
   /// # Examples
   /// ```
   /// use ml_rust_cuda::math::linear::Matrix;
   ///
   /// let matrix = Matrix::zero((4, 3));
-  /// 
+  ///
   /// println!("{}", matrix);
   /// ```
   pub fn zero(dims: (usize, usize)) -> Self {

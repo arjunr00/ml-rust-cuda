@@ -91,11 +91,11 @@ impl Vector {
 
   /// Returns the element of the vector at a given position, or `None` if the
   /// index is out of bounds of the vector.
-  /// 
+  ///
   /// # Arguments
   ///
   /// * `i` - The target element's index.
-  /// 
+  ///
   /// # Examples
   ///
   /// ```
