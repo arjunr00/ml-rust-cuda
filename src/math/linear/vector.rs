@@ -156,13 +156,16 @@ impl Vector {
   ///
   /// # Examples
   /// ```
-  /// use ml_rust_cuda::math::linear::Vector;
+  /// use ml_rust_cuda::math::{
+  ///   f32_eq,
+  ///   linear::Vector
+  /// };
   ///
   /// let v1 = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);
   /// let v2 = Vector::new(vec![8_f32, 1_f32, 2_f32, 4_f32, 0_f32, 1_f32]);
   ///
   /// let dot = v1.dot(&v2);
-  /// assert_eq!(dot, 105_f32);
+  /// assert!(f32_eq(dot, 105_f32));
   /// ```
   ///
   /// # Panics
@@ -206,15 +209,18 @@ impl Vector {
   ///
   /// # Examples
   /// ```
-  /// use ml_rust_cuda::math::linear::Vector;
+  /// use ml_rust_cuda::math::{
+  ///   f32_eq,
+  ///   linear::Vector
+  /// };
   ///
   /// let v = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);
   /// let p = 2_f32;
   ///
   /// let p_norm = v.p_norm(p);
   /// let inf_norm = v.p_norm(f32::INFINITY);
-  /// assert_eq!(p_norm, 195_f32.sqrt());
-  /// assert_eq!(inf_norm, 9_f32);
+  /// assert!(f32_eq(p_norm, 195_f32.sqrt()));
+  /// assert!(f32_eq(inf_norm, 9_f32));
   /// ```
   ///
   /// # Panics
