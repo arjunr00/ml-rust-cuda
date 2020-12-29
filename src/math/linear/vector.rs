@@ -240,6 +240,15 @@ impl Vector {
 
     if p.is_infinite() { rhs } else { rhs.powf(1_f32 / p) }
   }
+
+  /// Returns the vector transposed. See [Matrix::transposed].
+  ///
+  /// Uses a CUDA kernel under the hood.
+  pub fn transposed(&self) -> Self {
+    Self {
+      matrix: self.matrix.transposed()
+    }
+  }
 }
 
 impl cmp::PartialEq for Vector {
