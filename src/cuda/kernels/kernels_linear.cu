@@ -129,7 +129,7 @@ void kernel_p_norm_vec(float *lhs, float p, float *rhs) {
   int index = blockDim.x * blockIdx.x + threadIdx.x;
 
   __shared__ float sub_vec[SUB_VECTOR_LEN];
-  sub_vec[threadIdx.x] = powf(lhs[index], p);
+  sub_vec[threadIdx.x] = powf(fabs(lhs[index]), p);
 
   __syncthreads();
 
@@ -147,7 +147,7 @@ void kernel_inf_norm_vec(float *lhs, float *rhs) {
   int index = blockDim.x * blockIdx.x + threadIdx.x;
 
   __shared__ float sub_vec[SUB_VECTOR_LEN];
-  sub_vec[threadIdx.x] = lhs[index];
+  sub_vec[threadIdx.x] = fabs(lhs[index]);
 
   __syncthreads();
 
