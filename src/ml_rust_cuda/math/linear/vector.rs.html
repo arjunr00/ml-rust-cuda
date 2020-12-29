@@ -369,6 +369,12 @@
 <span id="366">366</span>
 <span id="367">367</span>
 <span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::{ <span class="ident">cmp</span>, <span class="ident">fmt</span>, <span class="ident">ops</span> };
 <span class="kw">use</span> <span class="ident">libc</span>::{ <span class="ident">c_float</span>, <span class="ident">size_t</span> };
@@ -528,13 +534,16 @@
   <span class="doccomment">///</span>
   <span class="doccomment">/// # Examples</span>
   <span class="doccomment">/// ```</span>
-  <span class="doccomment">/// use ml_rust_cuda::math::linear::Vector;</span>
+  <span class="doccomment">/// use ml_rust_cuda::math::{</span>
+  <span class="doccomment">///   f32_eq,</span>
+  <span class="doccomment">///   linear::Vector</span>
+  <span class="doccomment">/// };</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// let v1 = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);</span>
   <span class="doccomment">/// let v2 = Vector::new(vec![8_f32, 1_f32, 2_f32, 4_f32, 0_f32, 1_f32]);</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// let dot = v1.dot(&amp;v2);</span>
-  <span class="doccomment">/// assert_eq!(dot, 105_f32);</span>
+  <span class="doccomment">/// assert!(f32_eq(dot, 105_f32));</span>
   <span class="doccomment">/// ```</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// # Panics</span>
@@ -578,15 +587,18 @@
   <span class="doccomment">///</span>
   <span class="doccomment">/// # Examples</span>
   <span class="doccomment">/// ```</span>
-  <span class="doccomment">/// use ml_rust_cuda::math::linear::Vector;</span>
+  <span class="doccomment">/// use ml_rust_cuda::math::{</span>
+  <span class="doccomment">///   f32_eq,</span>
+  <span class="doccomment">///   linear::Vector</span>
+  <span class="doccomment">/// };</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// let v = Vector::new(vec![9_f32, 5_f32, 8_f32, 3_f32, 4_f32, 0_f32]);</span>
   <span class="doccomment">/// let p = 2_f32;</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// let p_norm = v.p_norm(p);</span>
   <span class="doccomment">/// let inf_norm = v.p_norm(f32::INFINITY);</span>
-  <span class="doccomment">/// assert_eq!(p_norm, 195_f32.sqrt());</span>
-  <span class="doccomment">/// assert_eq!(inf_norm, 9_f32);</span>
+  <span class="doccomment">/// assert!(f32_eq(p_norm, 195_f32.sqrt()));</span>
+  <span class="doccomment">/// assert!(f32_eq(inf_norm, 9_f32));</span>
   <span class="doccomment">/// ```</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// # Panics</span>
