@@ -12,6 +12,12 @@ My aim is to use as few dependencies as is reasonable, so that I can focus on im
   * Matrix addition; subtraction; scalar, matrix, and vector multiplication; and transpose.
   * Vector addition, subtraction, scalar multiplication, and dot product.
 
+### Known Bugs
+
+(Bugs marked with **[*]** are considered high priority.)
+
+* **[*]** There appears to be race conditions which cause `math::linear::vector::tests::test_dot_smaller_vecs` and `learning::instance::tests::test_normalize_instance` to fail inconsistently.
+
 ## Dependencies
 
 * [libc 0.2](https://crates.io/crates/libc)
@@ -33,9 +39,9 @@ To build, simply type:
 $ cargo build
 ```
 
-To run the built-in unit tests, type:
+To run the built-in unit and documentation tests, type:
 ```
-$ cargo test
+$ cargo test -- --test-threads=1
 ```
 
 ## Implementation Details

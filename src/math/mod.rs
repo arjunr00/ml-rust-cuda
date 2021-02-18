@@ -1,4 +1,5 @@
 pub mod linear;
+pub mod stats;
 
 const EPSILON: f32 = 0.00001;
 
