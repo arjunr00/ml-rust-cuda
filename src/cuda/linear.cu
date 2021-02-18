@@ -3,6 +3,8 @@
 
 #include "kernels/kernels_linear.cu"
 
+const float F_EPSILON = 0.00001f;
+
 extern "C"
 bool eq_mats(float *lhs, float *rhs, size_t len) {
   size_t matrix_size = len * sizeof(float);
@@ -21,7 +23,7 @@ bool eq_mats(float *lhs, float *rhs, size_t len) {
   int threads_per_block = 256;
   int blocks_per_grid = 1 + ((len - 1) / threads_per_block);
   kernel_eq_mats<<<blocks_per_grid, threads_per_block>>>
-    (d_lhs, d_rhs, len, std::numeric_limits<float>::epsilon(), equal_flag);
+    (d_lhs, d_rhs, len, F_EPSILON, equal_flag);
 
   cudaDeviceSynchronize();
 
