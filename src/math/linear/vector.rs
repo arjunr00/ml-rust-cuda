@@ -333,11 +333,44 @@ mod tests {
   }
 
   #[test]
+  fn test_add_smaller_vecs() {
+    let v1 = Vector::new(
+      vec![1_f32, 3_f32, 2_f32, 5_f32,
+           0_f32, 7_f32, 8_f32, 4_f32]
+    );
+    let v2 = Vector::new(
+      vec![9_f32, 1_f32, 4_f32, 0_f32,
+           8_f32, 3_f32, 1_f32, 2_f32]
+    );
+
+    let expected = Vector::new(
+      vec![10_f32, 4_f32, 6_f32, 5_f32,
+           8_f32, 10_f32, 9_f32, 6_f32]
+    );
+    assert_eq!(&v1 + &v2, expected);
+  }
+
+  #[test]
   fn test_dot_vecs() {
     let v1 = Vector::new(vec![3_f32; (1 << 20) + 123]);
     let v2 = Vector::new(vec![5_f32; (1 << 20) + 123]);
 
     let expected = (15 * ((1 << 20) + 123)) as f32;
+    assert!(f32_eq(v1.dot(&v2), expected));
+  }
+
+  #[test]
+  fn test_dot_smaller_vecs() {
+    let v1 = Vector::new(
+      vec![1_f32, 3_f32, 2_f32, 5_f32,
+           0_f32, 7_f32, 8_f32, 4_f32]
+    );
+    let v2 = Vector::new(
+      vec![9_f32, 1_f32, 4_f32, 0_f32,
+           8_f32, 3_f32, 1_f32, 2_f32]
+    );
+
+    let expected = 57_f32;
     assert!(f32_eq(v1.dot(&v2), expected));
   }
 
