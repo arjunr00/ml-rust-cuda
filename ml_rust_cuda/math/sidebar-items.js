@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["f32_eq",""]],"mod":[["linear",""]]});
+initSidebarItems({"fn":[["f32_eq",""]],"mod":[["linear",""],["stats",""]]});

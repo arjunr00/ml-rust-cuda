@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["mean","Returns the arithmetic mean of the values contained in a mathematical vector."],["std_dev","Returns the standard deviation of the values contained in a mathematical vector."]]});
